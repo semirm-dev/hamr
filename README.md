@@ -1,0 +1,2 @@
+# hamr
+Golang auth library
