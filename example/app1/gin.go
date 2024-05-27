@@ -11,7 +11,7 @@ import (
 )
 
 func MapAuthRoutesGin[T any](auth *hamr.Auth[T], router *gin.Engine) {
-	r := router.Group("/api/auth/")
+	r := router.Group("auth/")
 
 	r.GET(":provider/login", func(c *gin.Context) {
 		provider := c.Param("provider")

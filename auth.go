@@ -79,8 +79,9 @@ func New[T any](storage TokenStorage, getUserDetails GetUserDetailsFunc[T], opts
 	conf.authPath = conf.basePath + "/auth"
 
 	auth := &Auth[T]{
-		storage: storage,
-		conf:    conf,
+		storage:               storage,
+		conf:                  conf,
+		getUserDetailsByEmail: getUserDetails,
 	}
 
 	for _, o := range opts {
@@ -92,7 +93,7 @@ func New[T any](storage TokenStorage, getUserDetails GetUserDetailsFunc[T], opts
 
 func NewConfig() *Config {
 	return &Config{
-		Host:               env.Get("AUTH_HOST", "localhost"),
+		Host:               env.Get("AUTH_HOST", "http://localhost"),
 		Port:               "8080",
 		AccessTokenSecret:  []byte(str.Random(16)),
 		AccessTokenExpiry:  time.Minute * 15,

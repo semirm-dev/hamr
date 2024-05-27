@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/semirm-dev/hamr"
+	"github.com/semirm-dev/hamr/internal/env"
 	"github.com/semirm-dev/hamr/internal/web"
 	"github.com/semirm-dev/hamr/oauth/providers"
 )
@@ -17,9 +18,8 @@ func main() {
 
 	opts := []hamr.Option[uint]{
 		hamr.WithProvider[uint](providers.NewGoogle(
-			"212763908463-e0tpnd2jjaqusrj3svfgcp1m792etivb.apps.googleusercontent.com",
-			"SOIHmffrwyTqN0QzDfIuaJqq")),
-		hamr.WithConfig[uint](hamr.NewConfig()),
+			env.Get("GOOGLE_CLIENT_ID", ""),
+			env.Get("GOOGLE_CLIENT_SECRET", ""))),
 	}
 	auth := hamr.New(nil, func(email string) hamr.UserDetails[uint] {
 		return hamr.UserDetails[uint]{
