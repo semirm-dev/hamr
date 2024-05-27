@@ -32,6 +32,24 @@ func SqlServerDb(connString string) (*gorm.DB, error) {
 	})
 }
 
+func NewRedisCacheStorage(host, port, password string, cacheDb int) TokenStorage {
+	redisConfig := NewRedisConfig()
+	redisConfig.Host = host
+	redisConfig.Port = port
+	redisConfig.Password = password
+	redisConfig.DB = cacheDb
+
+	redisConn := &RedisStorage{
+		RedisConfig: redisConfig,
+	}
+
+	if err := redisConn.Initialize(); err != nil {
+		logrus.Fatal("failed to initialize redis connection: ", err)
+	}
+
+	return redisConn
+}
+
 func SeedCasbinPolicy(db *gorm.DB) {
 	runTrans(db, func(tx *gorm.DB) {
 		for _, rule := range rules {

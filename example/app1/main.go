@@ -21,7 +21,11 @@ func main() {
 			env.Get("GOOGLE_CLIENT_ID", ""),
 			env.Get("GOOGLE_CLIENT_SECRET", ""))),
 	}
-	auth := hamr.New(nil, func(email string) hamr.UserDetails[uint] {
+	auth := hamr.New(hamr.NewRedisCacheStorage(
+		"",
+		"6379",
+		"",
+		0), func(email string) hamr.UserDetails[uint] {
 		return hamr.UserDetails[uint]{
 			ID: 1,
 		}
