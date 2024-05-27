@@ -16,20 +16,25 @@ import (
 func main() {
 	flag.Parse()
 
+	tokenStorage := newRedisCacheStorage(
+		"",
+		"6379",
+		"",
+		0,
+	)
+	getUserDetails := func(email string) hamr.UserDetails[uint] {
+		return hamr.UserDetails[uint]{
+			//TODO: get user from database
+			ID: 1,
+		}
+	}
 	opts := []hamr.Option[uint]{
 		hamr.WithProvider[uint](providers.NewGoogle(
 			env.Get("GOOGLE_CLIENT_ID", ""),
 			env.Get("GOOGLE_CLIENT_SECRET", ""))),
 	}
-	auth := hamr.New(hamr.NewRedisCacheStorage(
-		"",
-		"6379",
-		"",
-		0), func(email string) hamr.UserDetails[uint] {
-		return hamr.UserDetails[uint]{
-			ID: 1,
-		}
-	}, opts...)
+
+	auth := hamr.New(tokenStorage, getUserDetails, opts...)
 
 	router := web.NewGinRouter()
 	MapAuthRoutesGin(auth, router)

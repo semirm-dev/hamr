@@ -1,4 +1,4 @@
-package hamr
+package main
 
 import (
 	"encoding/json"
@@ -7,6 +7,9 @@ import (
 	"strings"
 
 	"github.com/go-redis/redis"
+	"github.com/sirupsen/logrus"
+
+	"github.com/semirm-dev/hamr"
 )
 
 // pipeLength defines limit whether to use pipeline or not
@@ -14,10 +17,10 @@ const pipeLength = 1
 
 type RedisStorage struct {
 	*redis.Client
-	*RedisConfig
+	*redisConfig
 }
 
-type RedisConfig struct {
+type redisConfig struct {
 	Host       string
 	Port       string
 	Password   string
@@ -25,8 +28,26 @@ type RedisConfig struct {
 	PipeLength int
 }
 
-func NewRedisConfig() *RedisConfig {
-	return &RedisConfig{
+func newRedisCacheStorage(host, port, password string, cacheDb int) *RedisStorage {
+	redisConfig := newRedisConfig()
+	redisConfig.Host = host
+	redisConfig.Port = port
+	redisConfig.Password = password
+	redisConfig.DB = cacheDb
+
+	redisConn := &RedisStorage{
+		redisConfig: redisConfig,
+	}
+
+	if err := redisConn.initialize(); err != nil {
+		logrus.Fatal("failed to initialize redis connection: ", err)
+	}
+
+	return redisConn
+}
+
+func newRedisConfig() *redisConfig {
+	return &redisConfig{
 		Host:     "",
 		Port:     "",
 		Password: "",
@@ -34,15 +55,15 @@ func NewRedisConfig() *RedisConfig {
 	}
 }
 
-func (s *RedisStorage) Initialize() error {
+func (s *RedisStorage) initialize() error {
 	client := redis.NewClient(&redis.Options{
-		Addr:     s.RedisConfig.Host + ":" + s.RedisConfig.Port,
-		Password: s.RedisConfig.Password, // no password set
-		DB:       s.RedisConfig.DB,       // use default DB
+		Addr:     s.redisConfig.Host + ":" + s.redisConfig.Port,
+		Password: s.redisConfig.Password, // no password set
+		DB:       s.redisConfig.DB,       // use default DB
 	})
 
-	if s.RedisConfig.PipeLength == 0 {
-		s.RedisConfig.PipeLength = pipeLength
+	if s.redisConfig.PipeLength == 0 {
+		s.redisConfig.PipeLength = pipeLength
 	}
 
 	_, err := client.Ping().Result()
@@ -55,8 +76,8 @@ func (s *RedisStorage) Initialize() error {
 	return nil
 }
 
-func (s *RedisStorage) Store(items ...*Item) error {
-	if len(items) > s.RedisConfig.PipeLength { // with pipeline
+func (s *RedisStorage) Store(items ...*hamr.Item) error {
+	if len(items) > s.redisConfig.PipeLength { // with pipeline
 		pipe := s.Client.Pipeline()
 
 		for _, item := range items {

@@ -2,53 +2,8 @@ package hamr
 
 import (
 	"github.com/sirupsen/logrus"
-	"gorm.io/driver/mysql"
-	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
-
-/*
-	Helpers for different database drivers.
-	Postgres, MySql, SqlServer...
-*/
-
-func PostgresDb(connString string) (*gorm.DB, error) {
-	return gorm.Open(postgres.Open(connString), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
-	})
-}
-
-func MySqlDb(connString string) (*gorm.DB, error) {
-	return gorm.Open(mysql.Open(connString), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
-	})
-}
-
-func SqlServerDb(connString string) (*gorm.DB, error) {
-	return gorm.Open(sqlserver.Open(connString), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
-	})
-}
-
-func NewRedisCacheStorage(host, port, password string, cacheDb int) TokenStorage {
-	redisConfig := NewRedisConfig()
-	redisConfig.Host = host
-	redisConfig.Port = port
-	redisConfig.Password = password
-	redisConfig.DB = cacheDb
-
-	redisConn := &RedisStorage{
-		RedisConfig: redisConfig,
-	}
-
-	if err := redisConn.Initialize(); err != nil {
-		logrus.Fatal("failed to initialize redis connection: ", err)
-	}
-
-	return redisConn
-}
 
 func SeedCasbinPolicy(db *gorm.DB) {
 	runTrans(db, func(tx *gorm.DB) {

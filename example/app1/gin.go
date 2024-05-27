@@ -6,6 +6,9 @@ import (
 	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 
 	"github.com/semirm-dev/hamr"
 )
@@ -47,7 +50,10 @@ func Authorized[T any](auth *hamr.Auth[T]) gin.HandlerFunc {
 }
 
 func AuthorizedCasbin[T any](auth *hamr.Auth[T], obj, act string) gin.HandlerFunc {
-	db, err := hamr.PostgresDb("host=localhost port=5432 dbname=webapp user=postgres password=postgres sslmode=disable")
+	connStr := "host=localhost port=5432 dbname=webapp user=postgres password=postgres sslmode=disable"
+	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
 		logrus.Fatal(err)
 	}
