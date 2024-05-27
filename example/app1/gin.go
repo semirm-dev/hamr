@@ -11,7 +11,7 @@ import (
 )
 
 func MapAuthRoutesGin[T any](auth *hamr.Auth[T], router *gin.Engine) {
-	r := router.Group("/api/auth")
+	r := router.Group("/api/auth/")
 
 	r.GET(":provider/login", func(c *gin.Context) {
 		provider := c.Param("provider")
@@ -56,6 +56,8 @@ func AuthorizedCasbin[T any](auth *hamr.Auth[T], obj, act string) gin.HandlerFun
 	if err != nil {
 		logrus.Fatal("failed to initialize casbin adapter: ", err)
 	}
+
+	hamr.SeedCasbinPolicy(db)
 	policy := casbinPolicyModel()
 
 	return func(c *gin.Context) {
